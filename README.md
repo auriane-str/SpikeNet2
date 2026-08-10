@@ -31,7 +31,7 @@ There are two ways to run the SpikeNet2 model.
 1- If you want to run the model directly from MATLAB, you can use the import from python code. This code calls the pour_matlab.py Python script, which runs the model and returns the predictions to MATLAB.
 For this method, the export_and_reordered for the channel reordering step.
 
-2- You can also use the code .... in a Jupyter notebook.
+2- You can also use the import from python2 code. This code calls the for_matlab.py Python script, which runs the model and returns the predictions to MATLAB.
 For this method use reorderedfonction for the channel reordering step.
 
 The first method is faster than the second because processes a larger number of windows.
