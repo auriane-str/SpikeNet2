@@ -40,6 +40,8 @@ For this method, the `export_and_reordered` for the channel reordering step.
 
 For this method use `reorderedfonction` for the channel reordering step.
 
+You will find in `functions_used`, the functions called in the code, but you should have them when downloading the Spikenet2 GitHub.
+
 
 The first method is faster than the second because processes a larger number of windows.
 
