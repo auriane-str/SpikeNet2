@@ -1,23 +1,13 @@
-pyenv( "Version", "/home/auristre/.conda/envs/SpikeNet2/bin/python")
+pyenv( "Version", "your_conda_environment")
 
-dossierProjet = "/NAS/home/auristre/Documents/software/SpikeNet2/";
+dossierProjet = "your_path";
 
 cd(dossierProjet);
 
-fichierMat = "/NAS/home/auristre/Documents/software/SpikeNet2/data/PA07_05bis_reorderd.mat";
+fichierMat = "path_of_the_data.mat";
 
-commande = sprintf(['/home/auristre/.conda/envs/SpikeNet2/bin/python ' ...
-    '/NAS/home/auristre/Documents/software/SpikeNet2/pour_matlab.py "%s"'], ...
+commande = sprintf(['your_conda_environment ' ...
+    'your_path/pour_matlab.py "%s"'], ...
     fichierMat);
 
 system(commande);
-
-%system('conda run -n SpikeNet2 python /NAS/home/auristre/Documents/software/SpikeNet2/pour_matlab.py');
-
-
-dossierProjet = "/NAS/home/auristre/Documents/software/SpikeNet2/model/";
-
-net = importNetworkFromONNX('spikenet2.onnx');
-
-analyzeNetwork(net)
-
