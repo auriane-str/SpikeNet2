@@ -12,22 +12,33 @@ The following preprocessing steps are applied:
 
 # 2. Reordering
 
-The model is expecting the channels in a certain order.
+The model expects the EEG channels to be provided in a specific order.
 
-1- The function export_and_reordered reorders the channels and creates average and bipolar montage use by the model.
+Two functions are available for this step:
 
-2- The function reorderedfonction just reorders the channels.
+1- export_and_reordered 
+This function reorders the channels and creates the average and bipolar montage used by the model.
 
-Both of them creates the new file you can use to do predictions.
+2- reorderedfonction 
+This function only reorders the channels.
+
+Both functions create a new EEG file that can be used to run predictions with SpikeNet2.
 
 # 3. Predictions
 
-If you want to run the model directly from matlab, you can use the code import from python, which calls the code pour_matlab.py. With this method, you should use the method 1 for reordering.
+There are two ways to run the SpikeNet2 model.
 
-You can also use the code .... in a Jupyter notebook, in this case use the method 2 for reordering.
+1- If you want to run the model directly from MATLAB, you can use the import from python code. This code calls the pour_matlab.py Python script, which runs the model and returns the predictions to MATLAB.
+For this method, the export_and_reordered for the channel reordering step.
 
-The first code is faster than the second because they are more windows in the second. The second code is totally given by SpikeNet2, whereas I arranged a little the first one.
+2- You can also use the code .... in a Jupyter notebook.
+For this method use reorderedfonction for the channel reordering step.
+
+The first method is faster than the second because processes a larger number of windows.
+The second method is the original method provided by SpikeNet2, while the first method has been modified and adapted to make it faster and easier to use directly from MATLAB.
 
 # 4. Visualization
 
-If you want to convert the prediction into annotation you can import in Brainstorm, you can run the code save_treshold. It will create a text file containing all the times when the prediction has a peak above 0.5.
+If you want to convert the model prediction into annotation you can be imported in Brainstorm, you can use the save_threshold code. 
+This code identifies all prediction peaks above a threshold of 0.5 and creates a text file containing the corresponding times.
+The resulting text file can be imported into Brainstorm as annotations.
