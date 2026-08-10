@@ -1,0 +1,201 @@
+from dataclasses import dataclass
+
+@dataclass
+class Config:
+
+    # Data params
+    # 'your_path' is the path of your project
+    PATH_FILES_BONOBO: str = 'your_path/Events/real/' 
+    PATH_LUT_BONOBO: str = 'your_path/lut_labelled_20230628.csv' #'lut_labelled_20230628.csv'
+    PATH_CONTINOUS_EEG: str = 'your_path/EEG/hm_negative_eeg/'
+
+    FQ: int = 128 # Hz
+    
+    
+    # Preprocessing 
+    MONTAGE: str = 'conbine'
+    WINDOWSIZE: float = 1 # 2 seconds
+    
+	# Model parameters
+    N_CHANNELS: int = 37 #19+18
+
+    # training parameters
+    BATCH_SIZE: int = 256 #test 128
+    LR: float = 1e-4 #test 1e-4
+
+    def print_config(self):
+        print('THIS CONFIG FILE CONTAINS THE FOLLOWING PARAMETERS :\n')
+        for key, value in self.__dict__.items():
+            print(key, value)
+
+
+
+from torch.nn import BCELoss, CrossEntropyLoss
+from pytorch_lightning import LightningModule
+import torch
+import numpy as np
+# "." allows to import from the same directory
+from .net1d import Net1D
+from .heads import RegressionHead
+from .losses import WeightedFocalLoss
+import torch.nn.functional as F
+
+class ResNet(LightningModule):
+    def __init__(self,lr,n_channels=37,Focal_loss = False,online_hard_mine = None, **kwargs):
+        super().__init__()
+        self.lr = lr
+        self.Focal_loss = Focal_loss
+        self.online_hard_mine = online_hard_mine
+        self.model = Net1D(
+                    in_channels=n_channels, 
+                    base_filters=64,
+                    ratio=1, 
+                    filter_list=[64,160,160,400,400,1024,1024], 
+                    m_blocks_list=[2,2,2,3,3,4,4], 
+                    kernel_size=16, 
+                    stride=2, 
+                    groups_width=16,
+                    verbose=False, 
+                    use_bn=True,
+                    return_softmax=False, #False
+                    n_classes=1
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+                
+    def training_step(self,batch,batch_idx):
+        x, y = batch
+        # flatten label
+        y = y.view(-1, 1).float()
+        logits = self.forward(x)
+        loss_function = BCELoss()
+        if self.Focal_loss == True:
+          loss_function = WeightedFocalLoss()
+
+        loss = loss_function(logits, y)
+        self.log('train_loss', loss,prog_bar=True,on_step=True,on_epoch=True)
+        return loss
+    
+    def validation_step(self,batch,batch_idx):
+        x, y = batch
+        # flatten label
+        y = y.view(-1, 1).float()
+        logits = self.forward(x)
+        loss_function = BCELoss()
+        if self.Focal_loss == True:
+          loss_function = WeightedFocalLoss()
+        loss = loss_function(logits, y)
+        self.log('val_loss', loss,prog_bar=True,on_step=False,on_epoch=True)
+        return loss
+    
+    def predict_step(self,batch,batch_idx,dataloader_idx=0):
+        signals, labels = batch
+        # flatten label
+        labels = labels.view(-1, 1).float()
+        # generate predictions
+        out = self.forward(signals)
+        #pred = self.forward(signals)
+
+        # compute and log loss
+        return out
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        #optimizer = torch.optim.SGD(self.parameters(), lr=self.lr)
+        return optimizer
+
+
+class con_ECG_combine_montage():
+    def __init__(self):
+        mono_channels    = ['Fp1','F3','C3','P3','F7','T3','T5','O1','Fz','Cz','Pz','Fp2','F4','C4','P4','F8','T4','T6','O2']
+        bipolar_channels = ['Fp1-F7', 'F7-T3', 'T3-T5', 'T5-O1', 'Fp2-F8', 'F8-T4', 'T4-T6', 'T6-O2', 'Fp1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 'Fp2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'Fz-Cz', 'Cz-Pz']#18
+        channel_average = ['Fp1-avg','F3-avg','C3-avg','P3-avg','F7-avg','T3-avg','T5-avg','O1-avg','Fz-avg','Cz-avg','Pz-avg','Fp2-avg','F4-avg','C4-avg','P4-avg','F8-avg','T4-avg','T6-avg','O2-avg']#19
+
+        self.bipolar_ids = np.array([[mono_channels.index(bc.split('-')[0]), mono_channels.index(bc.split('-')[1])] for bc in bipolar_channels])
+
+        self.average_ids = [mono_channels.index(ch.split('-')[0]) for ch in channel_average]
+
+    def __call__(self, signal):
+        bipolar_signal = signal[self.bipolar_ids[:, 0]] - signal[self.bipolar_ids[:, 1]]
+        
+        common_average_signal = signal[self.average_ids] - torch.mean(signal[self.average_ids], dim=0, keepdim=True)
+
+        ECG_signal = signal[-1, :]
+
+        #combined_signal = np.vstack([bipolar_signal, common_average_signal, ECG_signal])
+        combined_signal = np.vstack([bipolar_signal, common_average_signal])
+        #combined_signal = torch.cat([bipolar_signal, common_average_signal], dim=0)
+
+        return combined_signal          
+
+
+
+
+class ContinousToSnippetDataset(torch.utils.data.Dataset):
+    # Dataset that takes a continous signal and returns snippets of a given length
+    # input shape: (n_channels,n_timepoints), output shape: (n_snippets,n_channels,ts)
+    def __init__(self,
+                 path_signal,
+                 montage=None, 
+                 transform=None,
+                 Fq=128,
+                 window_size=2,
+                 step=32):
+ 
+        # load signal
+    
+        import scipy.io as sio
+        signal = sio.loadmat(path_signal)['data']
+        # move signal to torch
+        signal = torch.FloatTensor(signal.astype(np.float32))
+        # generate snippets of shape (n_snippets,n_channels,ts)
+        self.snippets = signal.unfold(dimension = 1,size = window_size*Fq, step = step).permute(1,0,2)
+        # set transform
+        self.transform = transform
+        # set montage
+        self.montage = montage
+
+
+    def __len__(self):
+        # get item zero of self. snippets, which has shape (n_snippets,n_channels,ts)
+        return self.snippets.shape[0]
+
+    def _preprocess(self,signal):
+        '''preprocess signal and apply montage, transform and normalization'''
+
+        
+        
+        if self.montage is not None:
+            signal = self.montage(signal)
+
+      
+            
+        # apply transformations
+        if self.transform is not None:
+            signal = self.transform(signal)
+
+        # normalize signal
+        signal = signal / (np.quantile(np.abs(signal), q=0.95, method="linear", axis=-1, keepdims=True) + 1e-8)
+
+        
+        signal = torch.FloatTensor(signal.copy())
+        #signal = signal.float()
+        #signal = torch.FloatTensor(signal.astype(np.float32))
+
+        return signal
+
+    def __getitem__(self, idx):
+        # get the snippet        
+        signal = self.snippets[idx,:,:]
+        
+        # preprocess signal
+        signal = self._preprocess(signal)
+        
+        
+        # return signal and dummy label, the latter to prevent lightning dataloader from complaining
+        return signal,0
+
+
+
