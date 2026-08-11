@@ -30,25 +30,13 @@ Both functions create a new EEG file that can be used to run predictions with Sp
 
 # 3. Predictions
 
-There are two ways to run the SpikeNet2 model.
+This is the way to run the SpikeNet2 model.
 
-1- If you want to run the model directly from MATLAB, you can use the `import from python` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
+If you want to run the model directly from MATLAB, you can use the `import from python` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
 
 For this method use `reorderedfonction` for the channel reordering step.
 
 These functions are part of the original SpikeNet2 implementation and should already be available when downloading the SpikeNet2 GitHub repository.
-
-<small>*The number of windows can be adjusted by changing the `step` value in the `ContinousToSnippetDataset` function. A smaller `step` produces more overlapping windows, while a larger `step` produces fewer windows with less overlap.*</small>
-
-
-2- You can also use the `import from python2` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
-
-For this method, the `export_and_reordered` for the channel reordering step.
-
-
-The first method is the original method provided by SpikeNet2, while the second method has been modified and adapted to make it faster and easier to use directly from MATLAB.
-
-<small>*The main difference between the two methods is the order in which preprocessing and windowing are performed. In the first method, the EEG recording is first divided into 1-second windows, and the preprocessing steps are then applied independently to each window. In the second method, the preprocessing is applied to the entire EEG recording before it is divided into 1-second windows. Because the order of these operations is different, the two methods may produce slightly different predictions.*</small>
 
 
 # 4. Visualization
