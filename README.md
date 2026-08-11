@@ -38,6 +38,9 @@ For this method use `reorderedfonction` for the channel reordering step.
 
 These functions are part of the original SpikeNet2 implementation and should already be available when downloading the SpikeNet2 GitHub repository.
 
+<small>*The number of windows can be adjusted by changing the `step` value in the `ContinousToSnippetDataset` function. A smaller `step` produces more overlapping windows, while a larger `step` produces fewer windows with less overlap.*</small>
+
+
 2- You can also use the `import from python2` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
 
 For this method, the `export_and_reordered` for the channel reordering step.
