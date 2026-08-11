@@ -1,19 +1,25 @@
 %% Charger les prédictions
 load('/NAS/home/auristre/Documents/software/SpikeNet2/data/PA07_05bis_reorderd_predictions.mat')  % contient la variable preds
 
+%% Parameters
+fs = 128;      
+step = 32;      
+dt = step / fs; 
+
+
 %% Threshold
 threshold = 0.5;
 
 [pks, locs] = findpeaks(preds, 'MinPeakHeight', threshold);
 
-times = locs - 1;   % si une prédiction = 1 seconde
+times = (locs - 1)*dt;   % si une prédiction = 1 seconde
 
 spike_detected = preds > threshold;
 
 idx = find(spike_detected);
 
 % Une prédiction = une fenêtre de 1 seconde
-times = idx - 1;   % temps en secondes
+times = (idx - 1)*dt;   % temps en secondes
 
 
 %% Sauvegarde txt
