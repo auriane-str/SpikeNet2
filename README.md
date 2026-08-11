@@ -45,7 +45,7 @@ For this method, the `export_and_reordered` for the channel reordering step.
 
 The first method is the original method provided by SpikeNet2, while the second method has been modified and adapted to make it faster and easier to use directly from MATLAB.
 
-<small>The main difference between the two methods is the order in which preprocessing and windowing are performed. In the first method, the EEG recording is first divided into 1-second windows, and the preprocessing steps are then applied independently to each window. In the second method, the preprocessing is applied to the entire EEG recording before it is divided into 1-second windows. Because the order of these operations is different, the two methods may produce slightly different predictions.</small>
+<small>*The main difference between the two methods is the order in which preprocessing and windowing are performed. In the first method, the EEG recording is first divided into 1-second windows, and the preprocessing steps are then applied independently to each window. In the second method, the preprocessing is applied to the entire EEG recording before it is divided into 1-second windows. Because the order of these operations is different, the two methods may produce slightly different predictions.*</small>
 
 
 # 4. Visualization
