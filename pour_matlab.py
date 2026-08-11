@@ -1,46 +1,24 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import scipy.io as sio
-import torch
-import numpy as np
-import sys
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc, f1_score,accuracy_score ,precision_recall_curve, average_precision_score
-from torch.utils.data import DataLoader
+
 import os
+import sys
+import numpy as np
+import scipy.io as sio
+import matplotlib.pyplot as plt
+import torch
+
+from torch.utils.data import DataLoader,  Dataset
+import pytorch_lightning as pl
+
 import pickle
 from torchvision import transforms
-import pytorch_lightning as pl
-import torch
+
 sys.path.append('../')
 from sleeplib.Resnet_15.model import ResNet
-from sleeplib.datasets import BonoboDataset, ContinousToSnippetDataset
-# this holds all the configuration parameters
 from sleeplib.config import Config
 
-from pytorch_lightning.callbacks import ModelCheckpoint
-from torch.utils.data import DataLoader
-from torchvision import transforms
-
-from sleeplib.datasets import BonoboDataset , ContinousToSnippetDataset
-from sleeplib.montages import CDAC_bipolar_montage,CDAC_common_average_montage,CDAC_combine_montage,con_combine_montage
-from sleeplib.transforms import cut_and_jitter, channel_flip, extremes_remover
-
-from torch.utils.data import Dataset
-
-# Load input data
-fichier_entree = sys.argv[1]
-
-mat = sio.loadmat(fichier_entree)
-eeg = mat["data"]
-eeg = eeg / (np.quantile(np.abs(eeg), q=0.95, method="linear", axis=-1, keepdims=True) + 1e-8)
-
-
-
-window = eeg[:,0:128]
-x = torch.tensor(window, dtype=torch.float32)
 
 # Create EEG windows
 class MyEEGDataset(Dataset):
@@ -70,6 +48,18 @@ class MyEEGDataset(Dataset):
         return x, torch.tensor(0)
 
 
+# Load input data
+fichier_entree = sys.argv[1]
+
+mat = sio.loadmat(fichier_entree)
+eeg = mat["data"]
+
+# Preprocessing
+eeg = eeg / (np.quantile(np.abs(eeg), q=0.95, method="linear", axis=-1, keepdims=True) + 1e-8)
+
+window = eeg[:,0:128]
+x = torch.tensor(window, dtype=torch.float32)
+
 
 dataset = MyEEGDataset(
     eeg,
@@ -87,14 +77,13 @@ config = Config()
 config.print_config()
 
 
-# Load the model
+# Load model
 model = ResNet.load_from_checkpoint(
     '/NAS/home/auristre/Documents/software/SpikeNet2/model/new_weights.ckpt',
     lr=config.LR,
     n_channels=config.N_CHANNELS,
     map_location='cpu'
 )
-
 
 
 trainer = pl.Trainer(
@@ -109,7 +98,6 @@ preds = trainer.predict(
     loader
 )
 
-
 preds = torch.cat(preds).cpu().numpy()
 
 # Visualization of the predictions
@@ -119,7 +107,7 @@ plt.ylabel("Probabilité spike")
 plt.show()
 
 
-# Difine output file
+# Define output file
 fichier_sortie = os.path.splitext(fichier_entree)[0] + "_predictions.mat"
 
 # Save predictions
