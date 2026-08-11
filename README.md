@@ -53,3 +53,13 @@ If you want to convert the model prediction into annotation you can be imported 
 
 This code identifies all prediction peaks above a threshold of 0.5 and creates a text file containing the corresponding times.
 The resulting text file can be imported into Brainstorm as annotations.
+
+
+# Original work
+
+This work is a direct adaptation of [spikenet2](https://bdsp.io/content/spikenet2/1.0/).
+
+If you use this code in your work please cite : Li, J., Goldenholz, D., Hong, S., Sun, C., Jing, J., & Westover, M. B. (2025). SpikeNet 2.0 (version 1.0). Brain Data Science Platform. https://doi.org/10.60508/mbxb-hn49.
+
+Li J, Goldenholz DM, Alkofer M, Sun C, Nascimento FA, Halford JJ, Dean BC, Galanti M, Struck AF, Greenblatt AS, Lam AD, Herlopian A, Nwankwo C, Weber D, Maus D, Haider HA, Karakis I, Yoo JY, Ng MC, Selioutski O, Taraschenko O, Osman G, Katyal R, Schmitt SE, Benbadis S, Cash SS, Tatum WO, Sheikh Z, Kong WY, Bayas G, Turley N, Hong S, Westover MB, Jing J. Expert-Level Detection of Epilepsy Markers in EEG on Short and Long Timescales. NEJM AI. 2025 Jul;2(7):10.1056/aioa2401221. doi: 10.1056/aioa2401221. Epub 2025 Jun 26. PMID: 40689158; PMCID: PMC12276842.
+
