@@ -12,6 +12,8 @@ from torchvision import transforms
 import pytorch_lightning as pl
 import torch
 from tqdm import tqdm
+import scipy.io as sio
+import matplotlib.pyplot as plt
 
 # load own code
 import sys
@@ -32,7 +34,7 @@ from sleeplib.transforms import cut_and_jitter, channel_flip,extremes_remover
 
 # load config and show all default parameters
 config = Config()
-path_model = '/NAS/home/auristre/Documents/software/SpikeNet2/'
+path_model = 'your_path/SpikeNet2/'
 
 # set up dataloader to predict all samples in test dataset
 transform_train = transforms.Compose([extremes_remover(signal_max = 2000, signal_min = 20)])
@@ -40,7 +42,7 @@ con_combine_montage = con_ECG_combine_montage()
 
 
 # load pretrained model
-model = ResNet.load_from_checkpoint('/NAS/home/auristre/Documents/software/SpikeNet2/model/new_weights.ckpt',
+model = ResNet.load_from_checkpoint('your_path/SpikeNet2/model/new_weights.ckpt',
                                         lr=config.LR,
                                         n_channels=37,
                                         map_location=torch.device('cpu') ,
@@ -53,7 +55,7 @@ model = ResNet.load_from_checkpoint('/NAS/home/auristre/Documents/software/Spike
 trainer = pl.Trainer(devices=1, accelerator="gpu",fast_dev_run=False,enable_progress_bar=False)
 
 # store results
-path_controls = os.path.join("/NAS/home/auristre/Documents/software/SpikeNet2/controlset.csv")
+path_controls = os.path.join("your_path/SpikeNet2/controlset.csv")
 
 controls = pd.read_csv(path_controls)
 i = 0
@@ -61,7 +63,7 @@ i = 0
 
 path = sys.argv[1]
 
-import scipy.io as sio
+
 Bonobo_con = ContinousToSnippetDataset(
     path,
     montage=con_combine_montage,
@@ -83,14 +85,10 @@ con_dataloader = DataLoader(
 preds = trainer.predict(model, con_dataloader)
 preds = np.concatenate(preds).astype(float).squeeze()
 
-sio.savemat(path + 'predictions2.mat',{'preds': preds})
+sio.savemat(path + 'predictions.mat',{'preds': preds})
     
 
-
-import scipy.io as sio
-import matplotlib.pyplot as plt
-
-reference_file = path + "predictions2.mat"
+reference_file = path + "predictions.mat"
 
 mat = sio.loadmat(reference_file)
 
