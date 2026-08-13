@@ -3,7 +3,6 @@
 
 # In[ ]:
 
-
 from torch.utils.data import DataLoader
 import numpy as np
 import pandas as pd
@@ -86,37 +85,31 @@ preds = np.concatenate(preds).astype(float).squeeze()
 
 sio.savemat(path + 'predictions2.mat',{'preds': preds})
     
-    
-import pandas as pd
+
+
+import scipy.io as sio
 import matplotlib.pyplot as plt
-import numpy as np
 
-# chemin vers ton fichier csv
-path_pred = path + '_predictions2.csv'
+reference_file = path + "predictions2.mat"
 
-# charger les prédictions
-preds = pd.read_csv(path_pred)
+mat = sio.loadmat(reference_file)
 
-# convertir en numpy
-preds = preds.values.squeeze()
+# Remplace "preds_true" par le nom réel de la variable
+reference = mat['preds'].squeeze()
 
-# fréquence des prédictions (à adapter)
-# si une prédiction = une fenêtre de 1 seconde :
-fs_pred = 128  
+window_size = 128
+step = 32
+fs_pred = 128
 
-# axe temporel
-step=32
-time = np.arange(len(preds)) *step / fs_pred
-#time = np.arange(len(preds))
+time = time = np.arange(len(Bonobo_con))*step/fs_pred
 
-# plot
-plt.figure(figsize=(12,4))
-plt.plot(time, preds)
+plt.figure(figsize=(12, 4))
+plt.plot(time, reference)
 
 plt.xlabel("Time (s)")
 plt.ylabel("Prediction score")
 plt.title("SpikeNet2 predictions")
 plt.grid(True)
-
+plt.tight_layout()
 plt.show()
 
