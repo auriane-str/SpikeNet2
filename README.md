@@ -39,6 +39,9 @@ For this method use `reorderedfonction` for the channel reordering step.
 These functions are part of the original SpikeNet2 implementation and should already be available when downloading the SpikeNet2 GitHub repository.
 
 
+<small>Another way to run the model has been implemented. You can use the `import_from_python2` code, which calls the `pour_matlab.py` script. This method is less precise than the first one because it uses fewer windows. However, it is worth noting that the two methods do not produce the same predictions.</small>
+
+
 # 4. Visualization
 
 If you want to convert the model prediction into annotation you can be imported in Brainstorm, you can use the `save_threshold` code. 
