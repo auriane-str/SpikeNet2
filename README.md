@@ -30,16 +30,16 @@ Both functions create a new EEG file that can be used to run predictions with Sp
 
 # 3. Predictions
 
-This is the way to run the SpikeNet2 model.
+There are two ways to run the SpikeNet2 model.
 
-If you want to run the model directly from MATLAB, you can use the `import from python` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
+1- If you want to run the model directly from MATLAB, you can use the `import from python` code. This code calls the `for_matlab.py` Python script, which runs the model and returns the predictions to MATLAB.
 
 For this method use `reorderedfonction` for the channel reordering step.
 
-These functions are part of the original SpikeNet2 implementation and should already be available when downloading the SpikeNet2 GitHub repository.
+This function is part of the original SpikeNet2 implementation and should already be available when downloading the SpikeNet2 GitHub repository.
 
 
-<small>Another way to run the model has been implemented. You can use the `import_from_python2` code, which calls the `pour_matlab.py` script. This method is less precise than the first one because it uses fewer windows. However, it is worth noting that the two methods do not produce the same predictions.</small>
+2-Another way to run the model has been implemented. You can use the `import_from_python2` code, which calls the `pour_matlab.py` script. This method is faster than the first one. Moreover, it is worth noting that the two methods do not produce the same predictions.
 
 
 # 4. Visualization
