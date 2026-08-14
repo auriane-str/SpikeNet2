@@ -29,8 +29,8 @@ class MyEEGDataset(Dataset):
         # positions de début des fenêtres
         self.starts = np.arange(
             0,
-            eeg.shape[1] - window_size + 1,
-            window_size
+            eeg.shape[1] - (window_size//2) + 1,
+            1
         )
     def __len__(self):
         return len(self.starts)
@@ -38,8 +38,8 @@ class MyEEGDataset(Dataset):
     def __getitem__(self, idx):
         start = self.starts[idx]
 
-        x = self.eeg[:, start:start+self.window_size]
-
+        x = self.eeg[:, (start-self.window_size//2):(start+self.window_size//2)]
+        
         x = torch.tensor(
             x,
             dtype=torch.float32
