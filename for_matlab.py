@@ -61,31 +61,25 @@ controls = pd.read_csv(path_controls)
 i = 0
 #controls = controls[controls['Mode']=='Test']
 
-path = sys.argv[1]
+for eeg_file in tqdm(controls.EEG_index):
+
+    path = sys.argv[1]
+    
+    Bonobo_con = ContinousToSnippetDataset(path,montage=con_combine_montage,transform=None,window_size=config.WINDOWSIZE)
+    con_dataloader = DataLoader(Bonobo_con, batch_size=128,shuffle=False,num_workers=os.cpu_count())
+
+ 
+    preds = trainer.predict(model,con_dataloader)
+    
+    preds = np.concatenate(preds)
+    preds = preds.astype(float)
+
+    preds = pd.DataFrame(preds)
+    sio.savemat(path + 'predictions.mat',{'preds': preds})
 
 
-Bonobo_con = ContinousToSnippetDataset(
-    path,
-    montage=con_combine_montage,
-    transform=None,
-    Fq=128,
-    window_size=1,
-    step=32
-)
 
-print("Number of windows:", len(Bonobo_con))
 
-con_dataloader = DataLoader(
-    Bonobo_con,
-    batch_size=128,
-    shuffle=False,
-    num_workers=4
-)
-
-preds = trainer.predict(model, con_dataloader)
-preds = np.concatenate(preds).astype(float).squeeze()
-
-sio.savemat(path + 'predictions.mat',{'preds': preds})
     
 
 reference_file = path + "predictions.mat"
